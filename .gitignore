@@ -1,0 +1,6 @@
+/data/*
+!/data/*.py
+__pycache__
+venv
+/config.py
+/static/files/tasks

@@ -1,0 +1,7 @@
+{# YTCTF Platform API
+   Copyright © 2019 Evgeniy Filimonov <evgfilim1@gmail.com>
+   See full NOTICE at http://github.com/YummyTacos/YTCTF-API #}
+<h2>Здравствуй, {{ name }}</h2>
+<p>Ты запросил <strong>восстановление пароля</strong> на платформе YTCTF.</p>
+<p>Для продолжения введи код {{ code }}{% if link %} или перейди по <a href="{{ link }}/{{ code }}">этой</a> ссылке{% endif %}.</p>
+<p>Если ты не запрашивал восстановление пароля, проигнорируй это письмо (и удостоверься в безопасности своего почтового ящика).</p>
