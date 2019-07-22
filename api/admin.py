@@ -75,7 +75,7 @@ class Task(Resource, metaclass=APIDocMeta):
             return error(400, Errors.NOT_ENOUGH_ARGS, 'id was not provided', key='id')
         task = db_models.Task.query.get(int(data['id']))
         if task is None:
-            error(404, Errors.WRONG_ARG, 'No such task')
+            error(400, Errors.NOT_FOUND, 'No such task', key='id')
         return task
 
     @classmethod
@@ -219,7 +219,7 @@ class TaskFile(Resource, metaclass=APIDocMeta):
             error(400, Errors.NOT_ENOUGH_ARGS, 'task_id was not provided', key='task_id')
         task = db_models.Task.query.get(task_id)
         if task is None:
-            error(404, Errors.WRONG_ARG, 'No such task')
+            error(400, Errors.NOT_FOUND, 'No such task', key='task_id')
         if not g.api_user.is_admin and (not task.is_proposal or task.author_id != g.api_user.id):
             error(403, Errors.NOT_ADMIN)
         file = request.files.get('file')
@@ -245,7 +245,7 @@ class TaskFile(Resource, metaclass=APIDocMeta):
             error(400, Errors.NOT_ENOUGH_ARGS, 'id was not provided', key='id')
         file = db_models.TaskFile.query.get(file_id)
         if file is None:
-            error(404, Errors.WRONG_ARG, 'File not found')
+            error(400, Errors.NOT_FOUND, 'File not found', key='id')
         task = file.task
         if not g.api_user.is_admin and (not task.is_proposal or task.author_id != g.api_user.id):
             error(403, Errors.NOT_ADMIN)
@@ -281,7 +281,7 @@ class Category(Resource, metaclass=APIDocMeta):
             error(400, Errors.NOT_ENOUGH_ARGS, 'id was not provided', key='id')
         category = db_models.Category.query.get(category_id)
         if category is None:
-            error(404, Errors.WRONG_ARG, 'Category not found')
+            error(400, Errors.NOT_FOUND, 'Category not found', key='id')
         return category
 
     @staticmethod
@@ -361,7 +361,7 @@ class Article(Resource, metaclass=APIDocMeta):
             return error(400, Errors.NOT_ENOUGH_ARGS, 'id was not provided', key='id')
         article = db_models.Article.query.get(data['id'])
         if article is None:
-            error(404, Errors.WRONG_ARG, 'No such article')
+            error(400, Errors.NOT_FOUND, 'No such article', key='id')
         return article
 
     @classmethod
@@ -417,7 +417,7 @@ class Article(Resource, metaclass=APIDocMeta):
             setattr(article, key, value)
         db_models.db.session.commit()
         return {
-            'article': api_models.Task.from_db(article, full=True).to_dict()
+            'article': api_models.Article.from_db(article, full=True).to_dict()
         }
 
     @classmethod

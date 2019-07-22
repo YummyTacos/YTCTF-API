@@ -123,7 +123,7 @@ class Recover(Resource, metaclass=APIDocMeta):
             error(400, Errors.NOT_ENOUGH_ARGS, 'Neither email nor code were provided', key='email')
         user = db_models.User.query.filter_by(email=email)
         if user is None:
-            error(404, Errors.WRONG_ARG, 'user not found')
+            error(400, Errors.NOT_FOUND, 'user not found', key='email')
         if not user.is_confirmed:
             error(400, Errors.NOT_CONFIRMED, 'Cannot recover account as email was not confirmed')
         code = generate_code()
@@ -312,7 +312,7 @@ class Task(Resource, metaclass=APIDocMeta):
             return error(400, Errors.NOT_ENOUGH_ARGS, 'id was not provided', key='id')
         task = db_models.Task.query.get(int(data['id']))
         if task is None:
-            return error(404, Errors.WRONG_ARG, 'No such task')
+            return error(400, Errors.NOT_FOUND, 'No such task', key='id')
         if task.is_proposal and task.author_id != g.api_user.id:
             return error(403, Errors.NOT_ADMIN, 'You cannot view this task')
         return task
@@ -369,7 +369,8 @@ class User(Resource, metaclass=APIDocMeta):
     __d_get.add_return('user', 'User')
 
     __d_patch = MethodDescription('PATCH', 'Edit current user info', auth=True)
-    __d_patch.add_param('id', int, 'User ID to edit (requires admin rights)', optional=True)
+    __d_patch.add_param('id', int, 'User ID to edit (requires admin rights, but password cannot be'
+                                   ' changed)', optional=True)
     __d_patch.add_param('username', str, 'New username', optional=True)
     __d_patch.add_param('email', str, 'New email. Resets confirmation status, if present',
                         optional=True)
@@ -379,6 +380,7 @@ class User(Resource, metaclass=APIDocMeta):
     __d_patch.add_param('is_admin', int, 'If this is set to 0, removes admin rights, else if this'
                                          ' is set to 1, sets admin rights (requires admin rights)',
                         optional=True)
+    __d_patch.add_return('user', 'User', 'Edited user')
 
     __desc__ = (__d_get, __d_patch)  # TODO: `DELETE /user`
 
@@ -392,7 +394,7 @@ class User(Resource, metaclass=APIDocMeta):
             user_id = g.api_user.id
         user = db_models.User.query.get(user_id)
         if user is None:
-            return error(404, Errors.WRONG_ARG, 'User was not found')
+            return error(400, Errors.NOT_FOUND, 'User was not found', key='id')
         return user
 
     @classmethod
@@ -433,9 +435,11 @@ class User(Resource, metaclass=APIDocMeta):
             value = int(data['id'])
             if not g.api_user.is_admin and g.api_user.id != value:
                 error(403, Errors.NOT_ADMIN)
+            if 'password' in data and g.api_user.id != value:
+                error(403, Errors.CANNOT_EDIT, 'Password of other user cannot be changed')
             user = db_models.User.query.get(value)
             if user is None:
-                error(404, Errors.WRONG_ARG, 'User not found')
+                error(400, Errors.NOT_FOUND, 'User not found', key='id')
         else:
             user = g.api_user
         for key, value in data.items():
@@ -459,7 +463,7 @@ class User(Resource, metaclass=APIDocMeta):
         if g.api_user is not None and (g.api_user.is_admin or user.id == g.api_user.id):
             api_user.email = user.email
         return {
-            'task': api_user.to_dict()
+            'user': api_user.to_dict()
         }
 
 
@@ -501,7 +505,7 @@ class Category(Resource, metaclass=APIDocMeta):
             return error(400, Errors.NOT_ENOUGH_ARGS, 'id was not provided', key='id')
         category = db_models.Category.query.get(int(data['id']))
         if category is None:
-            return error(404, Errors.WRONG_ARG, 'No such category')
+            return error(400, Errors.NOT_FOUND, 'No such category', key='id')
         category_api = api_models.Category.from_db(category, full=True)
         return {'category': category_api.to_dict()}
 
@@ -544,7 +548,7 @@ class Article(Resource, metaclass=APIDocMeta):
             return error(400, Errors.NOT_ENOUGH_ARGS, 'id was not provided', key='id')
         article = db_models.Article.query.get(int(data['id']))
         if article is None:
-            return error(404, Errors.WRONG_ARG, 'No such article')
+            return error(400, Errors.NOT_FOUND, 'No such article', key='id')
         article_api = api_models.Article.from_db(article, full=True)
         return {'article': article_api.to_dict()}
 
@@ -568,7 +572,7 @@ class Articles(Resource, metaclass=APIDocMeta):
         if category_id is not None:
             category = db_models.Category.query.get(category_id)
             if category is None:
-                error(404, Errors.WRONG_ARG, 'category not found')
+                error(400, Errors.NOT_FOUND, 'category not found', key='category_id')
             query = query.filter_by(category_id=category.id)
         return {
             'articles': [

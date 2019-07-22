@@ -103,6 +103,7 @@ class Errors(Enum):
     NOT_ENOUGH_ARGS = (11, 'Not enough arguments were provided for this method')
     WRONG_ARG = (12, 'Wrong argument was provided')
     WRONG_TYPE = (13, 'Wrong argument type')
+    NOT_FOUND = (14, 'Item not found')
 
     # login errors: 2x
     NO_TOKEN_PROVIDED = (20, 'No token was provided')
@@ -119,8 +120,9 @@ class Errors(Enum):
     # permission errors: 4x
     NOT_ADMIN = (40, 'You are not administrator')
     CANNOT_DELETE = (41, 'Cannot delete this')
-    NOT_CONFIRMED = (42, 'You must confirm your account by confirming your email')
-    ALREADY_CONFIRMED = (43, 'Your account is already confirmed')
+    CANNOT_EDIT = (42, 'Cannot edit this')
+    NOT_CONFIRMED = (43, 'You must confirm your account by confirming your email')
+    ALREADY_CONFIRMED = (44, 'Your account is already confirmed')
 
 
 @dataclass()
